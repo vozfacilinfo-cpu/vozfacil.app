@@ -666,7 +666,7 @@
   </main>
 
   <!-- Modal de Alerta / Notificación Personalizada -->
-  <div id="customAlertModal" class="modal-overlay" style="display: none;">
+  <div id="customAlertModal" class="modal-overlay" style="display: none; z-index: 1200;">
     <div class="modal-card" style="text-align: center;">
       <div class="modal-title" style="font-size: 22px; margin-bottom: 12px;">VozFácil Notificación</div>
       <div class="modal-subtitle" id="customAlertMessage" style="font-size: 15px; margin-bottom: 20px; line-height: 1.5; color: var(--text-main);"></div>
@@ -680,7 +680,7 @@
   </div>
 
   <!-- Modal Personalizado para Selección de Tema y Visión -->
-  <div id="themeModal" class="modal-overlay" style="display: none;">
+  <div id="themeModal" class="modal-overlay" style="display: none; z-index: 1100;">
     <div class="modal-card" style="max-height: 85vh; overflow-y: auto; text-align: left;">
       <div class="modal-title" style="text-align: center;">Tema y Modo de Visión 🎨</div>
 
@@ -986,11 +986,15 @@
     }
 
     function openThemeModal() {
+      const settingsEl = document.getElementById('settingsModal');
+      if (settingsEl) settingsEl.style.display = 'none';
       document.getElementById('themeModal').style.display = 'flex';
     }
 
     function closeThemeModal() {
       document.getElementById('themeModal').style.display = 'none';
+      const settingsEl = document.getElementById('settingsModal');
+      if (settingsEl) settingsEl.style.display = 'flex';
     }
 
     function selectThemeOption(themeKey) {
