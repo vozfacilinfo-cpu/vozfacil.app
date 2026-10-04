@@ -580,6 +580,20 @@
       border-color: var(--primary);
     }
 
+    .theme-option-card {
+      background: var(--bg);
+      border: 1.5px solid var(--border-color);
+      padding: 14px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .theme-option-card:active {
+      transform: scale(0.98);
+      border-color: var(--primary);
+    }
+
     .modal-buttons-group {
       display: flex;
       flex-direction: column;
@@ -661,6 +675,41 @@
           🛒 Obtener Licencia en Gumroad
         </button>
         <button class="btn-cancel" onclick="closeCustomAlertModal()">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Personalizado para Selección de Tema y Visión -->
+  <div id="themeModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-height: 85vh; overflow-y: auto; text-align: left;">
+      <div class="modal-title" style="text-align: center;">Tema y Modo de Visión 🎨</div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="theme-option-card" onclick="selectThemeOption('auto')">
+          <div style="font-weight: 700; font-size: 15px; color: var(--text-main);">⚙️ Automático (Sigue al Sistema)</div>
+        </div>
+        <div class="theme-option-card" onclick="selectThemeOption('default')">
+          <div style="font-weight: 700; font-size: 15px; color: var(--text-main);">☀️ Modo Claro (Predeterminado)</div>
+        </div>
+        <div class="theme-option-card" onclick="selectThemeOption('dark')">
+          <div style="font-weight: 700; font-size: 15px; color: var(--text-main);">🌙 Modo Oscuro</div>
+        </div>
+        <div class="theme-option-card" onclick="selectThemeOption('deuteranopia')">
+          <div style="font-weight: 700; font-size: 15px; color: var(--text-main);">🔵 Deuteranopia (Rojo/Verde - Azul/Naranja)</div>
+        </div>
+        <div class="theme-option-card" onclick="selectThemeOption('protanopia')">
+          <div style="font-weight: 700; font-size: 15px; color: var(--text-main);">🔴 Protanopia (Rojo/Verde - Azul/Dorado)</div>
+        </div>
+        <div class="theme-option-card" onclick="selectThemeOption('tritanopia')">
+          <div style="font-weight: 700; font-size: 15px; color: var(--text-main);">🟡 Tritanopia (Azul/Amarillo - Teal/Rojo)</div>
+        </div>
+        <div class="theme-option-card" onclick="selectThemeOption('contrast')">
+          <div style="font-weight: 700; font-size: 15px; color: var(--text-main);">⬛ Alto Contraste Monocromático</div>
+        </div>
+      </div>
+
+      <div class="modal-buttons-group" style="margin-top: 16px;">
+        <button class="btn-cancel" onclick="closeThemeModal()">Cerrar</button>
       </div>
     </div>
   </div>
@@ -778,15 +827,10 @@
       <!-- Modo de Visión / Tema / Daltonismo -->
       <div class="modal-field-group">
         <label class="modal-label">Tema y Modo de Visión:</label>
-        <select id="themeSelect" class="modal-input" onchange="changeTheme(this.value)">
-          <option value="auto">⚙️ Automático (Sigue al Sistema)</option>
-          <option value="default">☀️ Modo Claro (Predeterminado)</option>
-          <option value="dark">🌙 Modo Oscuro</option>
-          <option value="deuteranopia">🔵 Deuteranopia (Rojo/Verde - Azul/Naranja)</option>
-          <option value="protanopia">🔴 Protanopia (Rojo/Verde - Azul/Dorado)</option>
-          <option value="tritanopia">🟡 Tritanopia (Azul/Amarillo - Teal/Rojo)</option>
-          <option value="contrast">⬛ Alto Contraste Monocromático</option>
-        </select>
+        <button type="button" class="modal-input" onclick="openThemeModal()" style="text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700;">
+          <span id="currentThemeBtnText">⚙️ Automático (Sigue al Sistema)</span>
+          <span style="font-size: 12px; color: var(--text-muted);">▼</span>
+        </button>
       </div>
 
       <div style="margin-top: 10px; margin-bottom: 20px;">
@@ -919,6 +963,16 @@
       mis_frases: []
     };
 
+    const themeNames = {
+      'auto': '⚙️ Automático (Sigue al Sistema)',
+      'default': '☀️ Modo Claro (Predeterminado)',
+      'dark': '🌙 Modo Oscuro',
+      'deuteranopia': '🔵 Deuteranopia (Rojo/Verde - Azul/Naranja)',
+      'protanopia': '🔴 Protanopia (Rojo/Verde - Azul/Dorado)',
+      'tritanopia': '🟡 Tritanopia (Azul/Amarillo - Teal/Rojo)',
+      'contrast': '⬛ Alto Contraste Monocromático'
+    };
+
     function customAlert(message, showGumroadBtn = false) {
       const msgEl = document.getElementById('customAlertMessage');
       const gumroadBtn = document.getElementById('customAlertBtnGumroad');
@@ -929,6 +983,19 @@
 
     function closeCustomAlertModal() {
       document.getElementById('customAlertModal').style.display = 'none';
+    }
+
+    function openThemeModal() {
+      document.getElementById('themeModal').style.display = 'flex';
+    }
+
+    function closeThemeModal() {
+      document.getElementById('themeModal').style.display = 'none';
+    }
+
+    function selectThemeOption(themeKey) {
+      changeTheme(themeKey);
+      closeThemeModal();
     }
 
     function initApp() {
@@ -1096,8 +1163,10 @@
         }
       }
 
-      const select = document.getElementById('themeSelect');
-      if (select) select.value = savedTheme;
+      const btnText = document.getElementById('currentThemeBtnText');
+      if (btnText) {
+        btnText.textContent = themeNames[savedTheme] || themeNames['auto'];
+      }
     }
 
     function changeTheme(themeKey) {
@@ -1137,8 +1206,6 @@
       if (newTecito !== '') {
         localStorage.setItem('tecitoUrl', newTecito);
       }
-      const themeKey = document.getElementById('themeSelect').value;
-      changeTheme(themeKey);
 
       closeSettingsModal();
       loadPhrases();
