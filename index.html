@@ -520,6 +520,7 @@
       max-width: 380px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.3);
       border: 1px solid var(--border-color);
+      color: var(--text-main);
     }
 
     .modal-title {
@@ -560,7 +561,19 @@
       outline: none;
       color: var(--text-main);
       background: var(--bg);
-      transition: border-color 0.2s ease;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    select.modal-input {
+      background-color: var(--bg);
+      color: var(--text-main);
+      appearance: auto;
+    }
+
+    select.modal-input option {
+      background-color: var(--card-bg);
+      color: var(--text-main);
+      padding: 12px;
     }
 
     .modal-input:focus {
@@ -637,6 +650,20 @@
       <!-- Se llena dinámicamente -->
     </div>
   </main>
+
+  <!-- Modal de Alerta / Notificación Personalizada -->
+  <div id="customAlertModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="text-align: center;">
+      <div class="modal-title" style="font-size: 22px; margin-bottom: 12px;">VozFácil Notificación</div>
+      <div class="modal-subtitle" id="customAlertMessage" style="font-size: 15px; margin-bottom: 20px; line-height: 1.5; color: var(--text-main);"></div>
+      <div class="modal-buttons-group">
+        <button class="btn-main" id="customAlertBtnGumroad" onclick="openGumroad(); closeCustomAlertModal();" style="display: none; margin-bottom: 6px;">
+          🛒 Obtener Licencia en Gumroad
+        </button>
+        <button class="btn-cancel" onclick="closeCustomAlertModal()">Entendido</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal de Nombre al primer inicio -->
   <div id="welcomeModal" class="modal-overlay" style="display: none;">
@@ -892,6 +919,18 @@
       mis_frases: []
     };
 
+    function customAlert(message, showGumroadBtn = false) {
+      const msgEl = document.getElementById('customAlertMessage');
+      const gumroadBtn = document.getElementById('customAlertBtnGumroad');
+      if (msgEl) msgEl.innerHTML = message;
+      if (gumroadBtn) gumroadBtn.style.display = showGumroadBtn ? 'block' : 'none';
+      document.getElementById('customAlertModal').style.display = 'flex';
+    }
+
+    function closeCustomAlertModal() {
+      document.getElementById('customAlertModal').style.display = 'none';
+    }
+
     function initApp() {
       applySavedTheme();
       updatePremiumUI();
@@ -928,8 +967,7 @@
 
     function openGoogleAuthModal() {
       if (!isPremiumUser()) {
-        alert('🔒 La Sincronización en la Nube y Login requieren VozFácil Premium. ¡Obtén tu licencia de por vida en Gumroad!');
-        openGumroad();
+        customAlert('🔒 La Sincronización en la Nube y Login requieren VozFácil Premium. ¡Obtén tu licencia de por vida en Gumroad!', true);
         return;
       }
       updateGoogleAuthUI();
@@ -952,21 +990,21 @@
     function confirmGoogleLink() {
       const emailInput = document.getElementById('googleEmailInput').value.trim();
       if (!emailInput || !emailInput.includes('@')) {
-        alert('Por favor ingresa un correo de Google válido (ej: tu_correo@gmail.com).');
+        customAlert('Por favor ingresa un correo de Google válido (ej: tu_correo@gmail.com).');
         return;
       }
 
       localStorage.setItem('googleUserLogged', 'true');
       localStorage.setItem('googleUserEmail', emailInput);
 
-      alert('¡Cuenta vinculada con éxito! Tus frases están respaldadas y sincronizadas en la nube. ☁️');
+      customAlert('¡Cuenta vinculada con éxito! Tus frases están respaldadas y sincronizadas en la nube. ☁️');
       updateGoogleAuthUI();
     }
 
     function logoutGoogle() {
       localStorage.removeItem('googleUserLogged');
       localStorage.removeItem('googleUserEmail');
-      alert('Has desvinculado tu cuenta.');
+      customAlert('Has desvinculado tu cuenta.');
       updateGoogleAuthUI();
     }
 
@@ -999,20 +1037,19 @@
     function activateGumroadLicense() {
       const keyInput = document.getElementById('gumroadKeyInput').value.trim();
       if (!keyInput) {
-        alert('Por favor ingresa tu clave o código de licencia de Gumroad.');
+        customAlert('Por favor ingresa tu clave o código de licencia de Gumroad.');
         return;
       }
       localStorage.setItem('isVozfacilPremium', 'true');
       localStorage.setItem('gumroadLicenseKey', keyInput);
-      alert('¡Felicidades! Se ha activado tu Licencia de Por Vida de VozFácil Premium. 👑');
+      customAlert('¡Felicidades! Se ha activado tu Licencia de Por Vida de VozFácil Premium. 👑');
       updatePremiumUI();
     }
 
     function handleVoiceTypeChange(val) {
       if (val !== 'female' && !isPremiumUser()) {
-        alert('🔒 La Voz Masculina y personalizaciones requieren VozFácil Premium. ¡Obtén tu licencia de por vida en Gumroad!');
+        customAlert('🔒 La Voz Masculina y personalizaciones requieren VozFácil Premium. ¡Obtén tu licencia de por vida en Gumroad!', true);
         document.getElementById('voiceTypeSelect').value = 'female';
-        openGumroad();
         return;
       }
       localStorage.setItem('userVoiceType', val);
@@ -1275,7 +1312,7 @@
       const selectedCategory = categorySelect ? categorySelect.value : currentCategory;
 
       if (!title || !text) {
-        alert('Por favor completa ambos campos.');
+        customAlert('Por favor completa ambos campos.');
         return;
       }
 
