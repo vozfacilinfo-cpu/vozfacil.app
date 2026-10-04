@@ -790,7 +790,7 @@
       </div>
 
       <div style="margin-top: 10px; margin-bottom: 20px;">
-        <button class="btn-cancel" onclick="openGuideModal()" style="background: var(--primary-light); color: var(--primary); font-weight: 800;">
+        <button class="btn-cancel" onclick="openGuideModal()" style="background: var(--primary-light); color: var(--text-main); border: 1.5px solid var(--border-color); font-weight: 800;">
           📖 Ver Mini Guía de Uso
         </button>
       </div>
@@ -1260,7 +1260,7 @@
             <div class="phrase-subtext">${textToSpeak}</div>
           </div>
           <div class="phrase-actions">
-            <button class="action-btn-small" onclick="editCustomPhrase(${globalIndex})" title="Editar">✏️</button>
+            <button class="action-btn-small" onclick="editCustomPhrase(${index})" title="Editar">✏️</button>
             <button class="action-btn-small btn-delete" onclick="deleteCustomPhrase(${globalIndex})" title="Eliminar">🗑️</button>
           </div>
         `;
