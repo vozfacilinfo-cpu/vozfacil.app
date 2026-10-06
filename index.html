@@ -1046,23 +1046,26 @@
       document.getElementById('googleAuthModal').style.display = 'none';
     }
 
+    function openGoogleSignInPage() {
+      const googleLoginUrl = 'https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmyaccount.google.com%2F';
+      if (window.Capacitor && window.Capacitor.isPluginAvailable && window.Capacitor.isPluginAvailable('Browser')) {
+        window.Capacitor.plugins.Browser.open({ url: googleLoginUrl });
+      } else {
+        window.open(googleLoginUrl, '_blank');
+      }
+    }
+
     function loginWithGoogle() {
       if (!isPremiumUser()) {
         customAlert('🔒 La Sincronización en la Nube requiere VozFácil Premium.', true);
         return;
       }
 
-      const googleOAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=1084252726488-vozfacil.apps.googleusercontent.com&response_type=token&scope=email%20profile&redirect_uri=https%3A%2F%2Fvozfacil-app.onrender.com%2F';
-
-      if (window.Capacitor && window.Capacitor.isPluginAvailable && window.Capacitor.isPluginAvailable('Browser')) {
-        window.Capacitor.plugins.Browser.open({ url: googleOAuthUrl });
-      } else {
-        window.open(googleOAuthUrl, '_blank');
-      }
+      openGoogleSignInPage();
 
       // Simulate/Receive verified Google profile and trigger Cloud Sync
       const currentName = localStorage.getItem('userName') || 'Usuario VozFácil';
-      const userEmail = currentName.toLowerCase().replace(/\s+/g, '') + '@gmail.com';
+      const userEmail = localStorage.getItem('googleUserEmail') || (currentName.toLowerCase().replace(/\s+/g, '') + '@gmail.com');
       localStorage.setItem('googleUserLogged', 'true');
       localStorage.setItem('googleUserEmail', userEmail);
 
