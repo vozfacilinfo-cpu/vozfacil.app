@@ -218,7 +218,7 @@
       background: var(--accent-hover);
     }
 
-    /* Estilos de Tecito 🍵 */
+    /* Estilos de Cafecito ☕ */
     .btn-tecito {
       width: 100%;
       background: #2D8C61;
@@ -798,21 +798,21 @@
         </select>
       </div>
 
-      <!-- Tarjeta de Donación Tecito -->
+      <!-- Tarjeta de Donación Cafecito -->
       <div class="tecito-card">
-        <div class="tecito-card-title">🍵 ¿Me invitas un tecito?</div>
+        <div class="tecito-card-title">☕ ¿Me invitas un cafecito?</div>
         <div class="tecito-card-desc">
           ¿Te ayuda VozFácil? Puedes apoyar este proyecto voluntariamente para mantener la aplicación 100% gratuita y libre de anuncios molestos.
         </div>
         <button class="btn-tecito" onclick="openTecito()">
-          <span>🍵</span> ¡Invitar un Tecito!
+          <span>☕</span> ¡Invitar un Cafecito!
         </button>
       </div>
 
-      <!-- Enlace de Tecito -->
+      <!-- Enlace de Cafecito -->
       <div class="modal-field-group">
-        <label class="modal-label">Tu Enlace de Tecito:</label>
-        <input type="text" id="settingTecitoInput" placeholder="Ej: https://tecito.app/tu_usuario" class="modal-input" />
+        <label class="modal-label">Tu Enlace de Cafecito:</label>
+        <input type="text" id="settingTecitoInput" placeholder="Ej: https://cafecito.app/appvozfacil" class="modal-input" />
       </div>
 
       <!-- Nombre -->
@@ -1079,11 +1079,19 @@
 
     function pushToCloud(email) {
       if (!email) return;
+      const userName = localStorage.getItem('userName') || '';
+      const customPhrasesStr = localStorage.getItem('userCustomPhrases') || '[]';
+      const voiceType = localStorage.getItem('userVoiceType') || 'female';
+
+      if (window.AndroidTTS && window.AndroidTTS.saveCloudBackup) {
+        window.AndroidTTS.saveCloudBackup(email, customPhrasesStr, userName, voiceType);
+      }
+
       try {
         const payload = {
-          userName: localStorage.getItem('userName') || '',
-          customPhrases: JSON.parse(localStorage.getItem('userCustomPhrases') || '[]'),
-          voiceType: localStorage.getItem('userVoiceType') || 'female',
+          userName: userName,
+          customPhrases: JSON.parse(customPhrasesStr),
+          voiceType: voiceType,
           updatedAt: new Date().toISOString()
         };
         const bucketKey = 'vozfacil_' + btoa(email).replace(/=/g, '');
@@ -1096,6 +1104,18 @@
 
     function pullFromCloud(email) {
       if (!email) return;
+
+      if (window.AndroidTTS && window.AndroidTTS.getCloudBackupPhrases) {
+        try {
+          const nativePhrases = window.AndroidTTS.getCloudBackupPhrases(email);
+          if (nativePhrases && nativePhrases !== '[]') {
+            localStorage.setItem('userCustomPhrases', nativePhrases);
+            loadPhrases();
+            syncWidgetPhrases();
+          }
+        } catch(e){}
+      }
+
       try {
         const bucketKey = 'vozfacil_' + btoa(email).replace(/=/g, '');
         fetch('https://kvdb.io/A9Wz7U5d8eG8f42X9A/' + bucketKey)
@@ -1221,7 +1241,7 @@
     }
 
     function openTecito() {
-      const link = localStorage.getItem('tecitoUrl') || 'https://tecito.app/user_7cagneyu';
+      const link = localStorage.getItem('tecitoUrl') || 'https://cafecito.app/appvozfacil';
       if (window.Capacitor && window.Capacitor.isPluginAvailable && window.Capacitor.isPluginAvailable('Browser')) {
         window.Capacitor.plugins.Browser.open({ url: link });
       } else {
@@ -1231,7 +1251,7 @@
 
     function openSettingsModal() {
       const currentName = localStorage.getItem('userName') || '';
-      const currentTecito = localStorage.getItem('tecitoUrl') || 'https://tecito.app/tu_usuario';
+      const currentTecito = localStorage.getItem('tecitoUrl') || 'https://cafecito.app/appvozfacil';
       document.getElementById('settingNameInput').value = currentName;
       document.getElementById('settingTecitoInput').value = currentTecito;
       applySavedTheme();
