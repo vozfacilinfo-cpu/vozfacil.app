@@ -756,6 +756,15 @@
             <span>Seleccionar Cuenta de Google</span>
           </button>
         </div>
+
+        <div class="guide-item" style="margin-bottom: 16px;">
+          <div style="font-weight: 800; color: var(--primary); font-size: 15px; margin-bottom: 6px;">📧 2. Correo de Google que seleccionaste</div>
+          <input type="email" id="googleEmailInput" placeholder="Ej: tu_correo@gmail.com" class="modal-input" />
+        </div>
+
+        <button class="btn-main" onclick="confirmGoogleLink()" style="margin-top: 10px; margin-bottom: 10px;">
+          VINCULAR Y SINCRONIZAR FRASES
+        </button>
       </div>
 
       <div class="modal-buttons-group" style="margin-top: 10px;">
@@ -1055,6 +1064,23 @@
       }
     }
 
+    function confirmGoogleLink() {
+      const emailInput = document.getElementById('googleEmailInput').value.trim().toLowerCase();
+      if (!emailInput || !emailInput.includes('@')) {
+        customAlert('Por favor ingresa tu correo de Google que seleccionaste (ej: tu_correo@gmail.com).');
+        return;
+      }
+
+      localStorage.setItem('googleUserLogged', 'true');
+      localStorage.setItem('googleUserEmail', emailInput);
+
+      pullFromCloud(emailInput);
+      pushToCloud(emailInput);
+
+      customAlert('¡Cuenta ' + emailInput + ' vinculada y sincronizada con éxito! ☁️');
+      updateGoogleAuthUI();
+    }
+
     function loginWithGoogle() {
       if (!isPremiumUser()) {
         customAlert('🔒 La Sincronización en la Nube requiere VozFácil Premium.', true);
@@ -1062,19 +1088,6 @@
       }
 
       openGoogleSignInPage();
-
-      const currentName = localStorage.getItem('userName') || 'Usuario VozFácil';
-      const userEmail = localStorage.getItem('googleUserEmail') || (currentName.toLowerCase().replace(/\s+/g, '') + '@gmail.com');
-      localStorage.setItem('googleUserLogged', 'true');
-      localStorage.setItem('googleUserEmail', userEmail);
-
-      pullFromCloud(userEmail);
-      pushToCloud(userEmail);
-
-      setTimeout(() => {
-        updateGoogleAuthUI();
-        customAlert('¡Sesión oficial de Google iniciada! Tus frases están respaldadas y sincronizadas en la nube. ☁️');
-      }, 1000);
     }
 
     function pushToCloud(email) {
@@ -1094,7 +1107,7 @@
           voiceType: voiceType,
           updatedAt: new Date().toISOString()
         };
-        const bucketKey = 'vozfacil_' + btoa(email).replace(/=/g, '');
+        const bucketKey = 'vozfacil_' + btoa(email.toLowerCase().trim()).replace(/=/g, '');
         fetch('https://kvdb.io/A9Wz7U5d8eG8f42X9A/' + bucketKey, {
           method: 'POST',
           body: JSON.stringify(payload)
@@ -1117,7 +1130,7 @@
       }
 
       try {
-        const bucketKey = 'vozfacil_' + btoa(email).replace(/=/g, '');
+        const bucketKey = 'vozfacil_' + btoa(email.toLowerCase().trim()).replace(/=/g, '');
         fetch('https://kvdb.io/A9Wz7U5d8eG8f42X9A/' + bucketKey)
           .then(res => res.json())
           .then(data => {
@@ -1143,7 +1156,7 @@
     function updateGoogleAuthUI() {
       const isLogged = localStorage.getItem('googleUserLogged') === 'true';
       const userName = localStorage.getItem('userName') || 'Usuario VozFácil';
-      const userEmail = localStorage.getItem('googleUserEmail') || (userName.toLowerCase().replace(/\s+/g, '') + '@gmail.com');
+      const userEmail = localStorage.getItem('googleUserEmail') || '';
 
       const loggedInArea = document.getElementById('googleLoggedInArea');
       const loggedOutArea = document.getElementById('googleLoggedOutArea');
@@ -1151,7 +1164,7 @@
       const nameEl = document.getElementById('googleUserName');
       const emailEl = document.getElementById('googleUserEmail');
 
-      if (isLogged) {
+      if (isLogged && userEmail) {
         if (loggedInArea) loggedInArea.style.display = 'block';
         if (loggedOutArea) loggedOutArea.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = 'block';
