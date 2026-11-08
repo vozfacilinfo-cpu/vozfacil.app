@@ -454,9 +454,10 @@
     }
 
     .cat-card {
+      position: relative;
       background: var(--card-bg);
       border: 1.5px solid var(--border-color);
-      padding: 16px;
+      padding: 16px 12px;
       border-radius: var(--radius-md);
       font-size: 15px;
       font-weight: 700;
@@ -465,6 +466,9 @@
       cursor: pointer;
       box-shadow: var(--shadow-sm);
       transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .cat-card.active {
@@ -472,6 +476,23 @@
       color: white;
       border-color: var(--primary);
       box-shadow: 0 6px 16px rgba(30, 43, 96, 0.3);
+    }
+
+    .cat-delete-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(225, 29, 72, 0.15);
+      color: #E11D48;
+      border: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
     }
 
     /* Lista de frases */
@@ -722,15 +743,14 @@
       <button class="btn-main" onclick="speakFromInput()">📢 ¡DECIR EN VOZ ALTA!</button>
     </div>
 
-    <!-- Seccion Categorias Grid 2x2 -->
+    <!-- Seccion Categorias Grid -->
     <div class="section-header">
       <div class="section-title">CATEGORÍAS DE ACCESO RÁPIDO</div>
+      <button class="btn-add-phrase" onclick="openAddCategoryModal()" style="background: var(--primary);">+ Nueva Categoría</button>
     </div>
-    <div class="categories-grid">
-      <div id="cat-presentacion" class="cat-card active" onclick="selectCategory('presentacion')">👋 Presentación</div>
-      <div id="cat-necesidades" class="cat-card" onclick="selectCategory('necesidades')">🆘 Necesidades</div>
-      <div id="cat-social" class="cat-card" onclick="selectCategory('social')">💬 Social</div>
-      <div id="cat-mis_frases" class="cat-card" onclick="selectCategory('mis_frases')">⭐ Mis Frases</div>
+
+    <div class="categories-grid" id="categoriesGrid">
+      <!-- Se llena dinámicamente -->
     </div>
 
     <!-- Seccion Frases -->
@@ -743,6 +763,28 @@
       <!-- Se llena dinámicamente -->
     </div>
   </main>
+
+  <!-- Modal para Agregar/Editar Categoría Personalizada -->
+  <div id="addCategoryModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-title" id="modalCategoryTitle">Nueva Categoría</div>
+
+      <div class="modal-field-group">
+        <label class="modal-label">Emoji / Ícono (Opcional):</label>
+        <input type="text" id="categoryEmojiInput" placeholder="Ej: 🍽️, 🏦, 🛒, 💊" class="modal-input" maxlength="4" value="📁" />
+      </div>
+
+      <div class="modal-field-group">
+        <label class="modal-label">Nombre de la Categoría:</label>
+        <input type="text" id="categoryNameInput" placeholder="Ej: Restaurante, Trámites..." class="modal-input" />
+      </div>
+
+      <div class="modal-buttons-group">
+        <button class="btn-main" id="modalCategorySubmitBtn" onclick="confirmAddCategory()">Guardar Categoría</button>
+        <button class="btn-cancel" onclick="closeAddCategoryModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal de Alerta / Notificación Personalizada -->
   <div id="customAlertModal" class="modal-overlay" style="display: none; z-index: 1200;">
@@ -948,10 +990,7 @@
       <div class="modal-field-group">
         <label class="modal-label">Categoría donde se guardará:</label>
         <select id="phraseCategoryInput" class="modal-input">
-          <option value="presentacion">👋 Presentación</option>
-          <option value="necesidades">🆘 Necesidades</option>
-          <option value="social">💬 Social</option>
-          <option value="mis_frases">⭐ Mis Frases</option>
+          <!-- Se llena dinámicamente -->
         </select>
       </div>
 
@@ -1057,9 +1096,104 @@
       closeThemeModal();
     }
 
+    function openAddCategoryModal() {
+      document.getElementById('categoryEmojiInput').value = '📁';
+      document.getElementById('categoryNameInput').value = '';
+      document.getElementById('addCategoryModal').style.display = 'flex';
+    }
+
+    function closeAddCategoryModal() {
+      document.getElementById('addCategoryModal').style.display = 'none';
+    }
+
+    function confirmAddCategory() {
+      const emoji = document.getElementById('categoryEmojiInput').value.trim() || '📁';
+      const name = document.getElementById('categoryNameInput').value.trim();
+
+      if (!name) {
+        customAlert('Por favor escribe un nombre para la categoría.');
+        return;
+      }
+
+      const customCategories = JSON.parse(localStorage.getItem('userCustomCategories') || '[]');
+      const catId = 'cat_' + Date.now();
+
+      customCategories.push({ id: catId, name: name, emoji: emoji });
+      localStorage.setItem('userCustomCategories', JSON.stringify(customCategories));
+
+      closeAddCategoryModal();
+      renderCategoriesGrid();
+      updateCategorySelectOptions();
+      selectCategory(catId);
+    }
+
+    function deleteCustomCategory(catId, event) {
+      if (event) event.stopPropagation();
+      let customCategories = JSON.parse(localStorage.getItem('userCustomCategories') || '[]');
+      customCategories = customCategories.filter(c => c.id !== catId);
+      localStorage.setItem('userCustomCategories', JSON.stringify(customCategories));
+
+      if (currentCategory === catId) {
+        currentCategory = 'presentacion';
+      }
+
+      renderCategoriesGrid();
+      updateCategorySelectOptions();
+      loadPhrases();
+    }
+
+    function renderCategoriesGrid() {
+      const grid = document.getElementById('categoriesGrid');
+      if (!grid) return;
+
+      const customCategories = JSON.parse(localStorage.getItem('userCustomCategories') || '[]');
+
+      let html = `
+        <div id="cat-presentacion" class="cat-card ${currentCategory === 'presentacion' ? 'active' : ''}" onclick="selectCategory('presentacion')">👋 Presentación</div>
+        <div id="cat-necesidades" class="cat-card ${currentCategory === 'necesidades' ? 'active' : ''}" onclick="selectCategory('necesidades')">🆘 Necesidades</div>
+        <div id="cat-social" class="cat-card ${currentCategory === 'social' ? 'active' : ''}" onclick="selectCategory('social')">💬 Social</div>
+        <div id="cat-mis_frases" class="cat-card ${currentCategory === 'mis_frases' ? 'active' : ''}" onclick="selectCategory('mis_frases')">⭐ Mis Frases</div>
+      `;
+
+      customCategories.forEach(cat => {
+        const isActive = currentCategory === cat.id ? 'active' : '';
+        html += `
+          <div id="cat-${cat.id}" class="cat-card ${isActive}" onclick="selectCategory('${cat.id}')">
+            <span>${cat.emoji} ${cat.name}</span>
+            <button class="cat-delete-btn" onclick="deleteCustomCategory('${cat.id}', event)" title="Eliminar categoría">✕</button>
+          </div>
+        `;
+      });
+
+      grid.innerHTML = html;
+    }
+
+    function updateCategorySelectOptions() {
+      const select = document.getElementById('phraseCategoryInput');
+      if (!select) return;
+
+      const customCategories = JSON.parse(localStorage.getItem('userCustomCategories') || '[]');
+
+      let html = `
+        <option value="presentacion">👋 Presentación</option>
+        <option value="necesidades">🆘 Necesidades</option>
+        <option value="social">💬 Social</option>
+        <option value="mis_frases">⭐ Mis Frases</option>
+      `;
+
+      customCategories.forEach(cat => {
+        html += `<option value="${cat.id}">${cat.emoji} ${cat.name}</option>`;
+      });
+
+      select.innerHTML = html;
+    }
+
     function initApp() {
       applySavedTheme();
       updatePremiumUI();
+      renderCategoriesGrid();
+      updateCategorySelectOptions();
+
       const storedName = localStorage.getItem('userName');
       if (!storedName) {
         document.getElementById('welcomeModal').style.display = 'flex';
@@ -1146,7 +1280,6 @@
 
       const logoImg = document.getElementById('mainHeaderLogo');
       if (logoImg) {
-        // Logo B B.png (white transparent) ONLY for dark theme! Logo B.png for all other themes!
         if (activeTheme === 'dark') {
           logoImg.src = darkLogoUrl;
         } else {
@@ -1232,19 +1365,7 @@
 
     function selectCategory(catKey) {
       currentCategory = catKey;
-
-      const categories = ['presentacion', 'necesidades', 'social', 'mis_frases'];
-      categories.forEach(c => {
-        const el = document.getElementById('cat-' + c);
-        if (el) {
-          if (c === catKey) {
-            el.classList.add('active');
-          } else {
-            el.classList.remove('active');
-          }
-        }
-      });
-
+      renderCategoriesGrid();
       loadPhrases();
     }
 
@@ -1323,7 +1444,7 @@
             <div class="phrase-subtext">${textToSpeak}</div>
           </div>
           <div class="phrase-actions">
-            <button class="action-btn-small" onclick="editCustomPhrase(${index})" title="Editar">✏️</button>
+            <button class="action-btn-small" onclick="editCustomPhrase(${globalIndex})" title="Editar">✏️</button>
             <button class="action-btn-small btn-delete" onclick="deleteCustomPhrase(${globalIndex})" title="Eliminar">🗑️</button>
           </div>
         `;
@@ -1336,6 +1457,8 @@
       const modalTitle = document.getElementById('modalPhraseTitle');
       const submitBtn = document.getElementById('modalSubmitBtn');
       const categorySelect = document.getElementById('phraseCategoryInput');
+
+      updateCategorySelectOptions();
 
       if (categorySelect) {
         categorySelect.value = currentCategory;
