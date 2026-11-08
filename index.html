@@ -1113,18 +1113,18 @@
       'contrast': '👁️ Alto Contraste Monocromático (Gratis)'
     };
 
-    const themePrimaryColors = {
-      'default': '#36B3B9',
-      'purple': '#8B5CF6',
-      'pink': '#EC4899',
-      'blue': '#2563EB',
-      'green': '#10B981',
-      'orange': '#F97316',
-      'dark': '#1E2B60',
-      'deuteranopia': '#1E40AF',
-      'protanopia': '#1D4ED8',
-      'tritanopia': '#0F766E',
-      'contrast': '#000000'
+    const themeColorPalette = {
+      'default':     { primary: '#36B3B9', bg: '#F4F8FA', badge: '#E6F8F8' },
+      'purple':      { primary: '#8B5CF6', bg: '#F5F3FF', badge: '#F3E8FF' },
+      'pink':        { primary: '#EC4899', bg: '#FDF2F8', badge: '#FCE7F3' },
+      'blue':        { primary: '#2563EB', bg: '#EFF6FF', badge: '#DBEAFE' },
+      'green':       { primary: '#10B981', bg: '#ECFDF5', badge: '#D1FAE5' },
+      'orange':      { primary: '#F97316', bg: '#FFF7ED', badge: '#FFEDD5' },
+      'dark':        { primary: '#1E2B60', bg: '#0A0E1A', badge: '#18234D' },
+      'deuteranopia':{ primary: '#1E40AF', bg: '#F0F9FF', badge: '#E0F2FE' },
+      'protanopia':  { primary: '#1D4ED8', bg: '#F8FAFC', badge: '#DBEAFE' },
+      'tritanopia':  { primary: '#0F766E', bg: '#F0FDFA', badge: '#CCFBF1' },
+      'contrast':    { primary: '#000000', bg: '#FFFFFF', badge: '#E2E8F0' }
     };
 
     function customAlert(message, showGumroadBtn = false) {
@@ -1413,6 +1413,8 @@
       if (btnText) {
         btnText.textContent = themeNames[savedTheme] || themeNames['auto'];
       }
+
+      setTimeout(syncWidgetPhrases, 200);
     }
 
     function changeTheme(themeKey) {
@@ -1423,7 +1425,6 @@
       }
       localStorage.setItem('colorblindMode', themeKey);
       applySavedTheme();
-      syncWidgetPhrases();
     }
 
     function openTecito() {
@@ -1567,7 +1568,7 @@
             <div class="phrase-subtext">${textToSpeak}</div>
           </div>
           <div class="phrase-actions">
-            <button class="action-btn-small" onclick="editCustomPhrase(${globalIndex})" title="Editar">✏️</button>
+            <button class="action-btn-small" onclick="editCustomPhrase(${index})" title="Editar">✏️</button>
             <button class="action-btn-small btn-delete" onclick="deleteCustomPhrase(${globalIndex})" title="Eliminar">🗑️</button>
           </div>
         `;
@@ -1662,14 +1663,28 @@
       closeDeleteConfirmModal();
     }
 
+    const themeColorPalette = {
+      'default':     { primary: '#36B3B9', bg: '#F4F8FA', badge: '#E6F8F8' },
+      'purple':      { primary: '#8B5CF6', bg: '#F5F3FF', badge: '#F3E8FF' },
+      'pink':        { primary: '#EC4899', bg: '#FDF2F8', badge: '#FCE7F3' },
+      'blue':        { primary: '#2563EB', bg: '#EFF6FF', badge: '#DBEAFE' },
+      'green':       { primary: '#10B981', bg: '#ECFDF5', badge: '#D1FAE5' },
+      'orange':      { primary: '#F97316', bg: '#FFF7ED', badge: '#FFEDD5' },
+      'dark':        { primary: '#1E2B60', bg: '#0A0E1A', badge: '#18234D' },
+      'deuteranopia':{ primary: '#1E40AF', bg: '#F0F9FF', badge: '#E0F2FE' },
+      'protanopia':  { primary: '#1D4ED8', bg: '#F8FAFC', badge: '#DBEAFE' },
+      'tritanopia':  { primary: '#0F766E', bg: '#F0FDFA', badge: '#CCFBF1' },
+      'contrast':    { primary: '#000000', bg: '#FFFFFF', badge: '#E2E8F0' }
+    };
+
     function syncWidgetPhrases() {
       const userName = localStorage.getItem('userName') || '';
       const customPhrasesStr = localStorage.getItem('userCustomPhrases') || '[]';
       const savedTheme = localStorage.getItem('colorblindMode') || 'default';
-      const primaryHex = themePrimaryColors[savedTheme] || '#36B3B9';
+      const palette = themeColorPalette[savedTheme] || themeColorPalette['default'];
 
       if (window.AndroidTTS && window.AndroidTTS.syncAllPhrases) {
-        window.AndroidTTS.syncAllPhrases(customPhrasesStr, userName, primaryHex);
+        window.AndroidTTS.syncAllPhrases(customPhrasesStr, userName, palette.primary, palette.bg, palette.badge);
       }
     }
 
