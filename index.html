@@ -1306,6 +1306,7 @@
       updatePremiumUI();
       renderCategoriesGrid();
       updateCategorySelectOptions();
+      loadPhrases();
 
       // Backdrop click handler for all modal overlays
       document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -1319,9 +1320,8 @@
       const storedName = localStorage.getItem('userName');
       if (!storedName) {
         document.getElementById('welcomeModal').style.display = 'flex';
-      } else {
-        loadPhrases();
       }
+
       setTimeout(syncWidgetPhrases, 300);
       setTimeout(syncWidgetPhrases, 1000);
 
@@ -1498,6 +1498,7 @@
       const customPhrases = JSON.parse(localStorage.getItem('userCustomPhrases') || '[]');
 
       const container = document.getElementById('phraseList');
+      if (!container) return;
       container.innerHTML = '';
 
       if (currentCategory === 'mis_frases') {
@@ -1568,7 +1569,7 @@
             <div class="phrase-subtext">${textToSpeak}</div>
           </div>
           <div class="phrase-actions">
-            <button class="action-btn-small" onclick="editCustomPhrase(${index})" title="Editar">✏️</button>
+            <button class="action-btn-small" onclick="editCustomPhrase(${globalIndex})" title="Editar">✏️</button>
             <button class="action-btn-small btn-delete" onclick="deleteCustomPhrase(${globalIndex})" title="Eliminar">🗑️</button>
           </div>
         `;
