@@ -614,6 +614,7 @@
     }
 
     .modal-card {
+      position: relative;
       background: var(--card-bg);
       border-radius: 28px;
       padding: 28px 24px;
@@ -622,6 +623,31 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.3);
       border: 1px solid var(--border-color);
       color: var(--text-main);
+    }
+
+    .modal-close-x {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      background: var(--bg);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 15px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+
+    .modal-close-x:active {
+      transform: scale(0.9);
+      background: var(--border-color);
     }
 
     .modal-title {
@@ -767,6 +793,7 @@
   <!-- Modal para Agregar/Editar Categoría Personalizada -->
   <div id="addCategoryModal" class="modal-overlay" style="display: none;">
     <div class="modal-card">
+      <button class="modal-close-x" onclick="closeAddCategoryModal()">✕</button>
       <div class="modal-title" id="modalCategoryTitle">Nueva Categoría</div>
 
       <div class="modal-field-group">
@@ -786,9 +813,21 @@
     </div>
   </div>
 
+  <!-- Modal para Seleccionar Categoría en Frases -->
+  <div id="categorySelectModal" class="modal-overlay" style="display: none; z-index: 1150;">
+    <div class="modal-card" style="max-height: 85vh; overflow-y: auto; text-align: left;">
+      <button class="modal-close-x" onclick="closeCategorySelectModal()">✕</button>
+      <div class="modal-title" style="text-align: center;">Seleccionar Categoría 📁</div>
+      <div id="categorySelectOptionsList" style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- Se llena dinámicamente -->
+      </div>
+    </div>
+  </div>
+
   <!-- Modal de Alerta / Notificación Personalizada -->
   <div id="customAlertModal" class="modal-overlay" style="display: none; z-index: 1200;">
     <div class="modal-card" style="text-align: center;">
+      <button class="modal-close-x" onclick="closeCustomAlertModal()">✕</button>
       <div class="modal-title" style="font-size: 22px; margin-bottom: 12px;">VozFácil Notificación</div>
       <div class="modal-subtitle" id="customAlertMessage" style="font-size: 15px; margin-bottom: 20px; line-height: 1.5; color: var(--text-main);"></div>
       <div class="modal-buttons-group">
@@ -803,6 +842,7 @@
   <!-- Modal Personalizado para Selección de Tema y Visión -->
   <div id="themeModal" class="modal-overlay" style="display: none; z-index: 1100;">
     <div class="modal-card" style="max-height: 85vh; overflow-y: auto; text-align: left;">
+      <button class="modal-close-x" onclick="closeThemeModal()">✕</button>
       <div class="modal-title" style="text-align: center;">Tema y Modo de Visión 🎨</div>
 
       <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -863,6 +903,7 @@
   <!-- Modal de Ajustes y Accesibilidad -->
   <div id="settingsModal" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-height: 90vh; overflow-y: auto;">
+      <button class="modal-close-x" onclick="closeSettingsModal()">✕</button>
       <div class="modal-title">Ajustes y Accesibilidad ⚙️</div>
 
       <!-- Tarjeta de Licencia Gumroad Premium -->
@@ -941,6 +982,7 @@
   <!-- Modal de Mini Guía de Uso -->
   <div id="guideModal" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-height: 85vh; overflow-y: auto; text-align: left;">
+      <button class="modal-close-x" onclick="closeGuideModal()">✕</button>
       <div class="modal-title" style="text-align: center;">📖 Guía de Uso de VozFácil</div>
 
       <div class="guide-item" style="margin-bottom: 16px;">
@@ -985,13 +1027,16 @@
   <!-- Modal para Agregar/Editar Frase -->
   <div id="addPhraseModal" class="modal-overlay" style="display: none;">
     <div class="modal-card">
+      <button class="modal-close-x" onclick="closeAddPhraseModal()">✕</button>
       <div class="modal-title" id="modalPhraseTitle">Nueva Frase</div>
 
       <div class="modal-field-group">
         <label class="modal-label">Categoría donde se guardará:</label>
-        <select id="phraseCategoryInput" class="modal-input">
-          <!-- Se llena dinámicamente -->
-        </select>
+        <button type="button" class="modal-input" onclick="openCategorySelectModal()" style="text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700;">
+          <span id="currentPhraseCategoryBtnText">👋 Presentación</span>
+          <span style="font-size: 12px; color: var(--text-muted);">▼</span>
+        </button>
+        <input type="hidden" id="phraseCategoryInput" value="presentacion" />
       </div>
 
       <div class="modal-field-group">
@@ -1014,6 +1059,7 @@
   <!-- Modal de Confirmación para Eliminar Frase -->
   <div id="deleteConfirmModal" class="modal-overlay" style="display: none;">
     <div class="modal-card">
+      <button class="modal-close-x" onclick="closeDeleteConfirmModal()">✕</button>
       <div class="modal-title" style="color: var(--text-main); font-size: 22px;">¿Eliminar Frase?</div>
       <div class="modal-subtitle">¿Estás seguro de que quieres eliminar esta frase? Esta acción no se puede deshacer.</div>
 
@@ -1065,6 +1111,20 @@
       'protanopia': '👁️ Protanopia (Rojo/Verde - Gratis)',
       'tritanopia': '👁️ Tritanopia (Azul/Amarillo - Gratis)',
       'contrast': '👁️ Alto Contraste Monocromático (Gratis)'
+    };
+
+    const themePrimaryColors = {
+      'default': '#36B3B9',
+      'purple': '#8B5CF6',
+      'pink': '#EC4899',
+      'blue': '#2563EB',
+      'green': '#10B981',
+      'orange': '#F97316',
+      'dark': '#1E2B60',
+      'deuteranopia': '#1E40AF',
+      'protanopia': '#1D4ED8',
+      'tritanopia': '#0F766E',
+      'contrast': '#000000'
     };
 
     function customAlert(message, showGumroadBtn = false) {
@@ -1168,24 +1228,77 @@
       grid.innerHTML = html;
     }
 
-    function updateCategorySelectOptions() {
-      const select = document.getElementById('phraseCategoryInput');
-      if (!select) return;
+    function openCategorySelectModal() {
+      renderCategorySelectModalOptions();
+      document.getElementById('categorySelectModal').style.display = 'flex';
+    }
+
+    function closeCategorySelectModal() {
+      document.getElementById('categorySelectModal').style.display = 'none';
+    }
+
+    function selectCategoryForPhrase(catId, catLabel) {
+      const hiddenInput = document.getElementById('phraseCategoryInput');
+      const btnText = document.getElementById('currentPhraseCategoryBtnText');
+      if (hiddenInput) hiddenInput.value = catId;
+      if (btnText) btnText.textContent = catLabel;
+      closeCategorySelectModal();
+    }
+
+    function renderCategorySelectModalOptions() {
+      const list = document.getElementById('categorySelectOptionsList');
+      if (!list) return;
 
       const customCategories = JSON.parse(localStorage.getItem('userCustomCategories') || '[]');
 
-      let html = `
-        <option value="presentacion">👋 Presentación</option>
-        <option value="necesidades">🆘 Necesidades</option>
-        <option value="social">💬 Social</option>
-        <option value="mis_frases">⭐ Mis Frases</option>
-      `;
+      const defaultCats = [
+        { id: 'presentacion', label: '👋 Presentación' },
+        { id: 'necesidades', label: '🆘 Necesidades' },
+        { id: 'social', label: '💬 Social' },
+        { id: 'mis_frases', label: '⭐ Mis Frases' }
+      ];
 
-      customCategories.forEach(cat => {
-        html += `<option value="${cat.id}">${cat.emoji} ${cat.name}</option>`;
+      let html = '';
+      defaultCats.forEach(c => {
+        html += `
+          <div class="theme-option-card" onclick="selectCategoryForPhrase('${c.id}', '${c.label}')">
+            <div style="font-weight: 700; font-size: 15px; color: var(--text-main);">${c.label}</div>
+          </div>
+        `;
       });
 
-      select.innerHTML = html;
+      customCategories.forEach(c => {
+        const label = `${c.emoji} ${c.name}`;
+        html += `
+          <div class="theme-option-card" onclick="selectCategoryForPhrase('${c.id}', '${label}')">
+            <div style="font-weight: 700; font-size: 15px; color: var(--text-main);">${label}</div>
+          </div>
+        `;
+      });
+
+      list.innerHTML = html;
+    }
+
+    function updateCategorySelectOptions() {
+      const hiddenInput = document.getElementById('phraseCategoryInput');
+      const btnText = document.getElementById('currentPhraseCategoryBtnText');
+      const customCategories = JSON.parse(localStorage.getItem('userCustomCategories') || '[]');
+
+      const catMap = {
+        'presentacion': '👋 Presentación',
+        'necesidades': '🆘 Necesidades',
+        'social': '💬 Social',
+        'mis_frases': '⭐ Mis Frases'
+      };
+
+      customCategories.forEach(c => {
+        catMap[c.id] = c.emoji + ' ' + c.name;
+      });
+
+      const currentVal = hiddenInput ? hiddenInput.value : currentCategory;
+      if (btnText) {
+        btnText.textContent = catMap[currentVal] || catMap[currentCategory] || '👋 Presentación';
+      }
     }
 
     function initApp() {
@@ -1193,6 +1306,15 @@
       updatePremiumUI();
       renderCategoriesGrid();
       updateCategorySelectOptions();
+
+      // Backdrop click handler for all modal overlays
+      document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.onclick = function(e) {
+          if (e.target === this) {
+            this.style.display = 'none';
+          }
+        };
+      });
 
       const storedName = localStorage.getItem('userName');
       if (!storedName) {
@@ -1301,6 +1423,7 @@
       }
       localStorage.setItem('colorblindMode', themeKey);
       applySavedTheme();
+      syncWidgetPhrases();
     }
 
     function openTecito() {
@@ -1456,13 +1579,8 @@
       editingIndex = indexToEdit;
       const modalTitle = document.getElementById('modalPhraseTitle');
       const submitBtn = document.getElementById('modalSubmitBtn');
-      const categorySelect = document.getElementById('phraseCategoryInput');
 
       updateCategorySelectOptions();
-
-      if (categorySelect) {
-        categorySelect.value = currentCategory;
-      }
 
       if (editingIndex >= 0) {
         const customPhrases = JSON.parse(localStorage.getItem('userCustomPhrases') || '[]');
@@ -1470,9 +1588,7 @@
         if (phrase) {
           document.getElementById('phraseTitleInput').value = phrase.title;
           document.getElementById('phraseTextInput').value = phrase.text;
-          if (categorySelect && phrase.category) {
-            categorySelect.value = phrase.category;
-          }
+          selectCategoryForPhrase(phrase.category || currentCategory, phrase.category || currentCategory);
         }
         if (modalTitle) modalTitle.textContent = 'Editar Frase';
         if (submitBtn) submitBtn.textContent = 'Guardar Cambios';
@@ -1494,8 +1610,8 @@
     function confirmAddPhrase() {
       const title = document.getElementById('phraseTitleInput').value.trim();
       const text = document.getElementById('phraseTextInput').value.trim();
-      const categorySelect = document.getElementById('phraseCategoryInput');
-      const selectedCategory = categorySelect ? categorySelect.value : currentCategory;
+      const hiddenInput = document.getElementById('phraseCategoryInput');
+      const selectedCategory = hiddenInput ? hiddenInput.value : currentCategory;
 
       if (!title || !text) {
         customAlert('Por favor completa ambos campos.');
@@ -1549,9 +1665,11 @@
     function syncWidgetPhrases() {
       const userName = localStorage.getItem('userName') || '';
       const customPhrasesStr = localStorage.getItem('userCustomPhrases') || '[]';
+      const savedTheme = localStorage.getItem('colorblindMode') || 'default';
+      const primaryHex = themePrimaryColors[savedTheme] || '#36B3B9';
 
       if (window.AndroidTTS && window.AndroidTTS.syncAllPhrases) {
-        window.AndroidTTS.syncAllPhrases(customPhrasesStr, userName);
+        window.AndroidTTS.syncAllPhrases(customPhrasesStr, userName, primaryHex);
       }
     }
 
